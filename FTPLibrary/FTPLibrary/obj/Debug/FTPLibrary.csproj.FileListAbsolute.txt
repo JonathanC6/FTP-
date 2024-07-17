@@ -1,0 +1,6 @@
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\obj\Debug\FTPLibrary.csproj.AssemblyReference.cache
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\obj\Debug\FTPLibrary.csproj.CoreCompileInputs.cache
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\bin\Debug\FTPLibrary.dll
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\bin\Debug\FTPLibrary.pdb
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\obj\Debug\FTPLibrary.dll
+D:\develop\CSProgram\MyWorks\FTPLibrary\FTPLibrary\obj\Debug\FTPLibrary.pdb
