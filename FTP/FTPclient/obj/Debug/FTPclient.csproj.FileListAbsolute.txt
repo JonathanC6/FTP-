@@ -1,0 +1,11 @@
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\bin\Debug\FTPclient.exe.config
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\bin\Debug\FTPclient.exe
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\bin\Debug\FTPclient.pdb
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\bin\Debug\FTPLibrary.dll
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\bin\Debug\FTPLibrary.pdb
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.csproj.AssemblyReference.cache
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.csproj.SuggestedBindingRedirects.cache
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.csproj.CoreCompileInputs.cache
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.csproj.CopyComplete
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.exe
+D:\develop\CSProgram\MyWorks\FTP\FTPclient\obj\Debug\FTPclient.pdb
