@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="ftpClientLib.cs" />
     <Compile Include="ftpServerLib.cs" />
-    <Compile Include="MSGHeader.cs" />
+    <Compile Include="MessageDefs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

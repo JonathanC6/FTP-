@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using FTPLibrary;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace FTPLibrary
 {
@@ -38,7 +38,7 @@ namespace FTPLibrary
                 IPAddress ipAddr = IPAddress.Parse(ipAddress);
                 IPEndPoint endPoint = new IPEndPoint(ipAddr, port);
                 serverSocket.Bind(endPoint);
-                //开始监听
+                //最大并发连接数为10，开始监听
                 serverSocket.Listen(10);
 
                 Console.WriteLine($"Server started and listening on {ipAddress}:{port}");
@@ -75,26 +75,19 @@ namespace FTPLibrary
                     int bytesReceived = clientSocket.Receive(buffer);
                     if (bytesReceived > 0)
                     {
-                        MSGHeader msgHeader = ByteArrayToStructure<MSGHeader>(buffer);
+                        MessageDefs.MSGHeader msgHeader = ByteArrayToStructure<MessageDefs.MSGHeader>(buffer);
                         //string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
                         //Console.WriteLine("Message received from client: " + receivedMessage);
 
                         switch (msgHeader.msgID)
                         {
-                            case MSGTAG.MSG_FILENAME:
+                            case MessageDefs.MSGTAG.MSG_FILENAME:
                                 Console.WriteLine("File name received: " + msgHeader.fileInfo.fileName);
+                                readFile(msgHeader.fileInfo.fileName, clientSocket);
                                 break;
-                            case MSGTAG.MSG_FILESIZE:
-                                Console.WriteLine("File size received: " + msgHeader.fileInfo.fileSize);
-                                break;
-                            case MSGTAG.MSG_READY_READ:
-                                Console.WriteLine("Client is ready to read");
-                                break;
-                            case MSGTAG.MSG_SEND:
-                                Console.WriteLine("Message received: " + msgHeader.fileInfo.fileName);
-                                break;
-                            case MSGTAG.MSG_SUCCESS:
-                                Console.WriteLine("Operation successful");
+                            case MessageDefs.MSGTAG.MSG_READY_READ:
+                                Console.WriteLine("Client is ready to receive data");
+                                sendFileData(msgHeader.fileInfo.fileName, clientSocket);
                                 break;
                             default:
                                 Console.WriteLine("Unknown message type received.");
@@ -102,7 +95,7 @@ namespace FTPLibrary
                         }
 
                         //发送确认消息给客户端
-                        SendConfirmation(clientSocket, "Message received!I'm HUST");
+                        SendConfirmation(clientSocket, $"Message received!");
 
                         //清空缓冲区
                         Array.Clear(buffer, 0, buffer.Length);
@@ -119,12 +112,75 @@ namespace FTPLibrary
             }
         }
 
-        private T ByteArrayToStructure<T>(byte[] bytes) where T : class
+        //实现函数readFile，当服务器收到文件名时，读取文件，获得文件大小并发回给客户端
+        private void readFile(string fileName, Socket clientSocket)
+        {
+            try
+            {
+                if (File.Exists(fileName))
+                {
+                    FileInfo fileInfo = new FileInfo(fileName);
+                    long fileSize = fileInfo.Length;
+
+                    Console.WriteLine($"File size: {fileSize} bytes");
+
+                    MessageDefs.MSGHeader responseHeader = new MessageDefs.MSGHeader
+                    {
+                        msgID = MessageDefs.MSGTAG.MSG_FILESIZE,
+                        fileInfo = new MessageDefs.FileInfoStruct
+                        {
+                            fileName = fileName,
+                            fileSize = fileSize
+                        }
+                    };
+
+                    byte[] responseBytes = StructureToByteArray(responseHeader);
+                    clientSocket.Send(responseBytes);
+                }
+                else
+                {
+                    Console.WriteLine($"File not found: {fileName}");
+                    SendConfirmation(clientSocket, "File not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error reading file: {ex.Message}");
+                SendConfirmation(clientSocket, "Error reading file");
+            }
+        }
+
+        private void sendFileData(string fileName, Socket clientSocket)
+        {
+            try
+            {
+                if (File.Exists(fileName))
+                {
+                    byte[] fileData = File.ReadAllBytes(fileName);
+                    clientSocket.Send(fileData);
+                    Console.WriteLine($"File data sent: {fileName}");
+
+                    SendConfirmation(clientSocket, "File transfer complete");
+                }
+                else
+                {
+                    Console.WriteLine($"File not found: {fileName}");
+                    SendConfirmation(clientSocket, "File not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error sending file data: {ex.Message}");
+                SendConfirmation(clientSocket, "Error sending file data");
+            }
+        }
+
+        private T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
             GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
             try
             {
-                return Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T)) as T;
+                return (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
             }
             finally
             {
@@ -137,6 +193,26 @@ namespace FTPLibrary
             byte[] responseBytes = Encoding.UTF8.GetBytes(message);
             clientSocket.Send(responseBytes);
             Console.WriteLine("Confirmation sent to client: " + message);
+        }
+
+
+        private byte[] StructureToByteArray<T>(T obj) where T : struct
+        {
+            int size = Marshal.SizeOf(obj);
+            byte[] arr = new byte[size];
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+
+            try
+            {
+                Marshal.StructureToPtr(obj, ptr, true);
+                Marshal.Copy(ptr, arr, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+
+            return arr;
         }
     }
 }
